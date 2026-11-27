@@ -574,6 +574,7 @@ Rails.application.routes.draw do
       end
 
       resources :upload, only: [:create], controller: 'uploads'
+      get 'media/:key', to: 'uploads#show_by_key', constraints: { key: /[^\/]+/ }
 
       resources :templates, controller: 'templates', only: [] do
         collection do

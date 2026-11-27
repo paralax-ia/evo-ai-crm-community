@@ -1,7 +1,31 @@
 class Api::V1::UploadsController < Api::V1::BaseController
   require_permissions({
-    create: 'conversations.attachments'
+    create: 'conversations.attachments',
+    show_by_key: 'conversations.attachments'
   })
+
+  def show_by_key
+    blob = ActiveStorage::Blob.find_by(key: params[:key])
+    unless blob
+      error_response(
+        ApiErrorCodes::RESOURCE_NOT_FOUND,
+        "Media with key #{params[:key]} not found"
+      )
+      return
+    end
+
+    success_response(
+      data: {
+        file_url: url_for(blob),
+        signed_id: blob.signed_id,
+        filename: blob.filename.to_s,
+        content_type: blob.content_type,
+        byte_size: blob.byte_size,
+        checksum: blob.checksum
+      },
+      message: 'Media resolved successfully'
+    )
+  end
 
   def create
     result = if params[:attachment].present?
